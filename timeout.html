@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <script src="angular.min.js"></script>
+    <title>Document</title>
+</head>
+<body>
+    <div ng-controller="mainCtrl">
+    {{ counter }} - {{ status }}
+    <button ng-click="stop()">Stop</button>
+    <span>{{ waktu }}</span>
+    </div>
+    <div test-dir></div>
+    
+<script>
+
+var app = angular.module('myApp', []);
+app.controller('mainCtrl', function($scope, $timeout) {
+    $scope.counter = 0;
+    $scope.status = 'Bilangan Genap';
+    $scope.jam = new Date().toLocaleTimeString();
+    $scope.waktu = setInterval($scope.jam);
+    $scope.onTimeout = function() {
+        $scope.counter++;
+        $scope.counter = $scope.counter == 100 ? 0 : $scope.counter;
+        $scope.status = $scope.counter % 2 == 0 ? 'Bilangan Genap' : 'Bilangan Ganjil';
+        mytimeout = $timeout($scope.onTimeout, 1000);
+    };
+
+    var mytimeout = $timeout($scope.onTimeout, 1000);
+
+    $scope.stop = function() {
+        $timeout.cancel(mytimeout);
+    };
+});
+
+app.directive('testDir', function() {
+    return {
+        restrict: 'A',
+        template: '<h1>Test directive</h1>'
+    };
+});
+</script>
+</body>
+</html>

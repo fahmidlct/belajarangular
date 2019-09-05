@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="myController">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="angular.min.js"></script>
+    <script src="angular-route.js"></script>
+    <script src="angular.min.js.map"></script>
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>Document</title>
+    </head>
+<body>
+    <!--
+        ng-app, ng-model, directives
+        {{ expressions }}
+        ng-init, ng-repeat
+
+        controller - $scope - View
+    -->
+    <label for="by">Order By :</label>
+    <select ng-model="atur" name="atur">
+        <option value="">Pilih</option>
+        <option value="nama">Nama</option>
+        <option value="kota">Kota</option>       
+    </select>
+
+    <table ng-controller="hapus">
+        <tr>
+            <th>No</th>
+            <th>Nama</th>
+            <th>Kota</th>
+            <th>Aksi</th>
+        </tr>
+        <tr ng-repeat="row in data | orderBy:atur">
+            <td>{{ $index+1 }}</td>
+            <td>{{ row.nama }}</td>
+            <td>{{ row.kota }}</td>
+            <td><input type="button" ng-click="edit(row.nama, $index)" style="cursor: pointer;" title="Edit {{row.nama}}" value="Edit"> <input type="button" ng-click="hapus(row.nama, $index)" style="cursor: pointer;" title="Hapus {{row.nama}}" value="Hapus"></td>
+        </tr>
+    </table>
+    <span>Jumlah data {{ data.length }}</span>
+    <span ng-model="pesan"></span>
+    <!--<div ng-init="nama=['fahmi', 'salman', 'badru']"></div>
+    <div ng-init="daftar=[{id: 1, nama: 'Fahmi', kelas: 'X'}, {id: 2, nama: 'Ipul', kelas: 'XI'}, {id: 3, nama: 'Congek', kelas: 'XII'}]"></div>
+    <input type="text" ng-model="nama"><br />
+    {{ nama * 12 }}
+    <input type="text" ng-model="hasil">
+    <ul>
+        <li ng-repeat="data in nama">{{ data }}</li>
+    </ul>
+    <ul>
+        <li ng-repeat="row in daftar | filter:hasil | orderBy:'nama'">ID : {{ row.id }} Nama {{ row.nama | uppercase }}, Kelas {{ row.kelas | lowercase }}</li>
+    </ul>-->
+    
+    <!-- ----------------------------------------------------- -->
+    <!-- Custom Directive 1. Element, 2. Attribut -->
+    <div header-title></div>
+    
+    <div ng-view=""></div>
+    
+    <div part-title></div>
+    <header-title></header-title>
+    <!--<div ng-include="'header.html'"></div>-->
+    <!--<div ng-controller="dataOrang">
+        <input type="text" ng-model="hasil" /><br />
+        <ul>
+            <li ng-repeat="rows in data | filter:hasil | orderBy:'nama'">
+                Nama : {{ rows.nama }}, Kota : {{ rows.kota }} berumur {{ rows.umur }} <a href="#" ng-click="hapus()">Hapus</a>
+            </li>
+        </ul>
+    </div>-->
+<script>
+//module angular
+
+var test = angular.module('myController', ['ngRoute']);
+
+test.controller('asdf', function($scope, $http) {
+    $scope.ketik = function() {
+        $scope.pesan = '';
+        if($scope.hasil == "") {
+            $scope.tampil = false;
+        }
+        else if($scope.hasil == false) {
+            $scope.pesan = 'Data tidak ditemukan';
+        }
+        else {
+            $scope.tampil = true;
+        }
+    }
+
+});
+
+test.controller('hapus', function($scope, $http, $location) {
+    $scope.hapus = function(x, y) {
+        
+
+        datahapus = {
+            nama: x
+        };
+
+        $http.post('delete.php', datahapus).success(function(hasil) {
+            //alert(hasil);
+            //$scope.pesan = x + ' berhasil dihapus';
+            $scope.i = y;
+            alert($scope.i);
+            $scope.data.splice($scope.i, 1);    
+        });
+    }
+});
+
+//factory
+test.factory('factoryOrang', function($http) {
+    var factoryOrang = {};
+
+    factoryOrang.getOrang = function() {
+        return $http.get('data.php');
+    };
+
+    factoryOrang.putOrang = function(data) {
+        return $http.post('add.php', data);
+    };
+
+    /*factoryOrang.deleteOrang = function(x) {
+        return $http.post('delete.php', x);
+    };*/
+    
+    /*factoryOrang.deleteOrang = function(data) {
+        return $http.delete('delete.php', data);
+    };*/
+
+    return factoryOrang;
+});
+
+
+
+//custom directive
+test.directive('headerTitle', function() {
+    return {
+        restrict: 'A',
+        templateUrl: 'header.html'
+    }
+});
+
+test.directive('partTitle', function() {
+    return {
+        restrict: 'A',
+        templateUrl: 'part.html',
+        controller: function($scope, factoryOrang) {
+            //controller: function($scope, $http) { http dipindahkan ke factory
+            /*$scope.data = [
+            { nama: 'Fahmi', kota: 'Jakarta', umur: 23},
+            { nama: 'Dul', kota: 'Bandung', umur: 17},
+            { nama: 'Manan', kota: 'Surabaya', umur: 18},
+            { nama: 'Lara', kota: 'Semarang', umur: 20}
+            ];*/
+
+            factoryOrang.getOrang().success(function(hasil) {
+                $scope.data = hasil;
+                //return false;
+            });
+            /*$http.get('data.php').success(function(hasil) {
+                $scope.data = hasil;
+            });*/
+        }
+    };
+});
+
+//route
+test.config(function($routeProvider) {
+    $routeProvider
+    .when('/tambahinfo', {
+        templateUrl: 'index2.html',
+        controller: 'add'
+    })
+    .when('/kontak', {
+        templateUrl: 'kontak.html'
+    })
+    .otherwise({redirectTo: '/'});
+});
+
+test.controller('add', function($scope, $http, factoryOrang) {
+    $scope.tambahData = function() {
+        /*$scope.data.push({
+            nama: $scope.databaru.nama,
+            kota: $scope.databaru.kota
+        });
+        $scope.nama = "";
+        $scope.kota = "";*/
+
+        databaru = {
+            nama: $scope.databaru.nama,
+            kota: $scope.databaru.kota
+        };
+
+        factoryOrang.putOrang(databaru).success(function(hasil) {
+            $scope.data.push({
+                nama: $scope.databaru.nama,
+                kota: $scope.databaru.kota
+            });
+
+            $scope.databaru.nama = '';
+            $scope.databaru.kota = '';
+            alert(hasil);
+            //factoryOrang.getOrang();
+        });
+    }
+
+    //method hapus
+});
+//controller
+/*
+test.controller('dataOrang', function($scope) {
+    $scope.data = [
+        { nama: 'Fahmi', kota: 'Jakarta', umur: 23},
+        { nama: 'Dul', kota: 'Bandung', umur: 17},
+        { nama: 'Manan', kota: 'Surabaya', umur: 18},
+        { nama: 'Lara', kota: 'Semarang', umur: 20}
+    ]
+});
+*/
+</script>
+</body>
+</html>

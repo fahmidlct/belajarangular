@@ -1,0 +1,13 @@
+<div ng-controller="asdf">
+    <input type="text" list="daftar" name="daftar" ng-change="ketik()" ng-model="hasil">
+    <datalist id="daftar">
+        <option ng-repeat="row in data" value="{{ row.nama }}">
+    </datalist>
+    <span ng-model="pesan"></span>
+    <ul ng-show="tampil">
+        <li ng-repeat="row in data | filter:hasil | orderBy:'id'">
+            Nama {{ row.nama }} Kota {{ row.kota }} <input type="button" ng-click="" name="hapus" style="cursor: pointer;" value="Hapus">
+        </li>
+    </ul>
+
+</div>
